@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 public class CookieConsumer implements Consumer<Cookie> {
 
-    private static Logger LOGGER = Logger.getLogger(CookieFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CookieFilter.class.getName());
 
     @Override
     public void accept(Cookie cookie) {
