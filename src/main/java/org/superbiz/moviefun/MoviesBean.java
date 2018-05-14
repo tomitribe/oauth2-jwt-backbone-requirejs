@@ -41,8 +41,9 @@ public class MoviesBean {
         return entityManager.find(Movie.class, id);
     }
 
-    public void addMovie(Movie movie) {
+    public Movie addMovie(Movie movie) {
         entityManager.persist(movie);
+        return movie;
     }
 
     public void editMovie(Movie movie) {
@@ -51,7 +52,32 @@ public class MoviesBean {
 
     public void deleteMovie(long id) {
         Movie movie = entityManager.find(Movie.class, id);
+        if (movie == null) {
+            throw new IllegalArgumentException("Movie " + id + " not found");
+        }
         entityManager.remove(movie);
+    }
+
+    public Movie addCommentToMovie(final Long id, final Comment comment) {
+        final Movie movie = entityManager.find(Movie.class, id);
+        if (movie == null) {
+            throw new IllegalArgumentException("Movie " + id + " not found");
+        }
+        entityManager.persist(comment);
+        movie.getComments().add(comment);
+        entityManager.merge(movie);
+        return movie;
+    }
+
+    public Movie removeCommentToMovie(final Long id, final Comment comment) {
+        final Movie movie = entityManager.find(Movie.class, id);
+        if (movie == null) {
+            throw new IllegalArgumentException("Movie " + id + " not found");
+        }
+        movie.getComments().remove(comment);
+        entityManager.remove(comment);
+        entityManager.merge(movie);
+        return movie;
     }
 
     public List<Movie> getMovies(Integer firstResult, Integer maxResults, String field, String searchTerm) {

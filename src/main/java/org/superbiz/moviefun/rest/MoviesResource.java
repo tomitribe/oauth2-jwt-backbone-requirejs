@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,11 +16,16 @@
  */
 package org.superbiz.moviefun.rest;
 
+import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.ClaimValue;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.superbiz.moviefun.Comment;
 import org.superbiz.moviefun.Movie;
 import org.superbiz.moviefun.MoviesBean;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,6 +36,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.List;
 
 @Path("movies")
@@ -40,6 +46,20 @@ public class MoviesResource {
     @EJB
     private MoviesBean service;
 
+    @Inject
+    @Claim("username")
+    private ClaimValue<String> username;
+
+    @Inject
+    @Claim("email")
+    private ClaimValue<String> email;
+
+    @Inject
+    @Claim("jti")
+    private ClaimValue<String> jti;
+
+    @Inject
+    private JsonWebToken jwtPrincipal;
 
     @GET
     @Path("{id}")
@@ -58,6 +78,22 @@ public class MoviesResource {
     public Movie addMovie(Movie movie) {
         service.addMovie(movie);
         return movie;
+    }
+
+    @POST
+    @Path("{id}/comment")
+    @Consumes("text/plain")
+    public Movie addCommentToMovie(
+            @PathParam("id") final long id,
+            final String comment) {
+
+        final Comment c = new Comment();
+        c.setAuthor(username.getValue());
+        c.setComment(comment);
+        c.setEmail(email.getValue());
+        c.setTimestamp(new Date());
+
+        return service.addCommentToMovie(id, c);
     }
 
     @PUT
